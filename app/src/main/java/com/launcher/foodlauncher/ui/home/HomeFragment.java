@@ -21,6 +21,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -50,6 +51,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.radiobutton.MaterialRadioButton;
 import com.launcher.foodlauncher.R;
 import com.launcher.foodlauncher.adapter.PlaceAutoSuggestAdapter;
@@ -97,8 +100,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
     List<Restaurant> restaurants1;
 
-    MaterialRadioButton radioRating, radioDistance;
-    RadioGroup radioGroup;
+    ChipGroup chipGroup;
     Call<Search> call;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -115,6 +117,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         super.onActivityCreated(savedInstanceState);
 
         String googleApiKey = "AIzaSyDNSYlMnfy-MUNl3MUoRjZDZWYD3WLg8AQ";
+
+        chipGroup = getView().findViewById(R.id.chip_group);
 
         FrameLayout bottomSheetLayout = getView().findViewById(R.id.standardBottomSheet);
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetLayout);
@@ -346,9 +350,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     void showRestaurants(double lat, double lon) {
 
         textViewResult = getView().findViewById(R.id.text_view_result);
-        radioGroup = getView().findViewById(R.id.radio_group);
-        radioDistance = getView().findViewById(R.id.radio_distance);
-        radioRating = getView().findViewById(R.id.radio_rating);
 
         Log.d("TAG", "onCreate: " + latitude + " " + longitude);
 
@@ -362,23 +363,29 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
         ApiSearchInterface searchApi = retrofit.create(ApiSearchInterface.class);
 
-        if (radioRating.isChecked()) {
-            call = searchApi.getResultBy(apiKey, lat, lon, sortByRating);
-            callEnqueue(call);
-        } else {
-            call = searchApi.getResultBy(apiKey, lat, lon, sortByRealDistance);
-            callEnqueue(call);
-        }
-
-        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        call = searchApi.getResultBy(apiKey, lat, lon, sortByRating);
+        callEnqueue(call);
+        chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (radioRating.isChecked()) {
-                    call = searchApi.getResultBy(apiKey, lat, lon, sortByRating);
-                } else {
-                    call = searchApi.getResultBy(apiKey, lat, lon, sortByRealDistance);
+            public void onCheckedChanged(ChipGroup group, @IdRes int checkedId) {
+                // Handle the checked chip change.
+                switch (checkedId) {
+                    case R.id.chip_rating: {
+                        call = searchApi.getResultBy(apiKey, lat, lon, sortByRating);
+                        callEnqueue(call);
+                        break;
+                    }
+                    case R.id.chip_distance: {
+                        call = searchApi.getResultBy(apiKey, lat, lon, sortByRealDistance);
+                        callEnqueue(call);
+                        break;
+                    }
+                    case R.id.chip_cost: {
+                        call = searchApi.getResultBy(apiKey, lat, lon, sortByCost);
+                        callEnqueue(call);
+                        break;
+                    }
                 }
-                callEnqueue(call);
             }
         });
     }
@@ -387,6 +394,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         call.enqueue(new Callback<Search>() {
             @Override
             public void onResponse(Call<Search> call, Response<Search> response) {
+                Log.i("TAG", "onResponse: call called");
                 if (!response.isSuccessful()) {
                     textViewResult.setText("Response code: " + response.code());
                     return;

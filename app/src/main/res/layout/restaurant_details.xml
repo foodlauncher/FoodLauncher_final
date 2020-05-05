@@ -30,18 +30,32 @@
             android:layout_marginHorizontal="20dp"
             android:layout_marginBottom="20dp"
             />
-        <TextView
+        <RelativeLayout
+            android:id="@+id/rel_rating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/res_rating"
-            android:fontFamily="@font/montserrat"
-            android:textSize="15sp"
             android:layout_marginHorizontal="20dp"
-            android:layout_marginBottom="10dp"
-            android:paddingHorizontal="15dp"
-            android:paddingVertical="10dp"
-            android:textColor="@color/colorAccent"
-            />
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/res_rating"
+                android:fontFamily="@font/montserrat"
+                android:textSize="15sp"
+                android:paddingLeft="15dp"
+                android:paddingVertical="5dp"
+                android:textColor="@color/colorAccent"
+                />
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_star_black_24dp"
+                android:paddingRight="15dp"
+                android:layout_toRightOf="@+id/res_rating"
+                android:paddingVertical="5dp"
+                android:layout_toEndOf="@+id/res_rating" />
+        </RelativeLayout>
 
         <TextView
             android:layout_width="wrap_content"
@@ -108,23 +122,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/call_now"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="40dp"
             android:layout_marginTop="30dp"
-            android:background="@drawable/btn_background"
             android:textColor="@color/colorAccent"
             android:textSize="15sp"
             android:paddingVertical="3dp"
             android:fontFamily="@font/montserrat_bold"
-            android:text="Call" />
-        <Button
+            android:text="Call"
+            android:background="@drawable/btn_background"/>
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/invite"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_background"
             android:layout_marginHorizontal="40dp"
             android:layout_marginTop="30dp"
             android:layout_below="@+id/call_now"
@@ -132,7 +145,8 @@
             android:textSize="15sp"
             android:paddingVertical="3dp"
             android:fontFamily="@font/montserrat_bold"
-            android:text="Invite" />
+            android:text="Invite"
+            android:background="@drawable/btn_background"/>
 
     </RelativeLayout>
 

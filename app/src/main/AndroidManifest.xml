@@ -13,7 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".PermissionsActivity"></activity>
+        <activity android:name=".PermissionsActivity" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -24,7 +24,8 @@
 
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_main" />
+            android:label="@string/title_activity_main"
+            android:windowSoftInputMode="adjustPan"/>
         <activity android:name=".SignUpActivity" />
         <activity android:name=".LoginActivity">
             <intent-filter>

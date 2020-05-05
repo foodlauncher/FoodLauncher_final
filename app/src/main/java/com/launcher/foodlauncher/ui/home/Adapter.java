@@ -80,9 +80,11 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
 //            holder.textFive.setText("Table booking available");
 //        }
 
-        Glide.with(context)
-                .load(restaurants.get(position).getRestaurant().getThumb())
-                .into(holder.resImage);
+        if(restaurants.get(position).getRestaurant().getThumb() != "") {
+            Glide.with(context)
+                    .load(restaurants.get(position).getRestaurant().getThumb())
+                    .into(holder.resImage);
+        }
 
 //        double lat = Double.parseDouble(restaurants.get(position).getRestaurant().getLocation().getLatitude());
 //        double lon = Double.parseDouble(restaurants.get(position).getRestaurant().getLocation().getLongitude());
@@ -104,6 +106,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
                 Button inviteBtn = dialogView.findViewById(R.id.invite);
                 TextView costForTwo = dialogView.findViewById(R.id.res_cost_for_two);
                 TextView tableReservation = dialogView.findViewById(R.id.res_table);
+                RelativeLayout rate = dialogView.findViewById(R.id.rel_rating);
 
                 resName.setText(restaurants.get(position).getRestaurant().getName());
                 resAddress.setText(restaurants.get(position).getRestaurant().getLocation().getAddress());
@@ -114,7 +117,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
                 shape.setShape(GradientDrawable.RECTANGLE);
                 shape.setCornerRadii(new float[] { 16, 16, 16, 16, 16, 16, 16, 16 });
                 shape.setColor(Color.parseColor("#" + restaurants.get(position).getRestaurant().getUserRating().getRatingColor()));
-                resRating.setBackground(shape);
+                rate.setBackground(shape);
                 costForTwo.setText("Average cost for two: Rs. " + restaurants.get(position).getRestaurant().getAverageCostForTwo());
                 if(restaurants.get(position).getRestaurant().getIsTableReservationSupported() == 0) {
                     tableReservation.setText("Table reservation is not supported.");
