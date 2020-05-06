@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/app_icon"
-        android:layout_marginTop="150dp"
+        android:layout_marginTop="100dp"
         android:layout_centerHorizontal="true"/>
 
     <TextView
@@ -35,8 +35,9 @@
         android:textSize="16sp"
         android:background="@drawable/edit_background"
         android:padding="10dp"
-        android:layout_marginTop="300dp"
+        android:layout_below="@id/welcome_text"
         android:layout_marginHorizontal="25dp"
+        android:layout_marginTop="50dp"
         android:hint="Full name"
         android:inputType="text"
         android:fontFamily="@font/montserrat"/>
@@ -120,18 +121,10 @@
         android:layout_marginHorizontal="50dp"
         android:background="@drawable/btn_background"
         android:text="Sign Up"
-        android:layout_marginTop="25dp"
-        android:layout_below="@id/new_"
+        android:layout_marginVertical="25dp"
+        android:layout_alignParentBottom="true"
         android:id="@+id/btn_signup"
         android:fontFamily="@font/montserrat"
         />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="invisible"
-        android:layout_below="@id/btn_signup"/>
 
 </RelativeLayout>
