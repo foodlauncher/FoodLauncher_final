@@ -31,7 +31,7 @@
     <EditText
         android:id="@+id/input_fullname"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:textSize="16sp"
         android:background="@drawable/edit_background"
         android:padding="10dp"
@@ -45,7 +45,7 @@
     <EditText
         android:id="@+id/input_email"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:textSize="16sp"
         android:background="@drawable/edit_background"
         android:padding="10dp"
@@ -59,7 +59,7 @@
     <EditText
         android:id="@+id/input_phone"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:inputType="phone"
         android:textSize="16sp"
         android:background="@drawable/edit_background"
@@ -73,7 +73,7 @@
     <EditText
         android:id="@+id/input_password"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:padding="10dp"
         android:inputType="textPassword"
         android:background="@drawable/edit_background"
