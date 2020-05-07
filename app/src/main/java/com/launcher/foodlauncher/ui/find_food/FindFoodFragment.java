@@ -57,7 +57,7 @@ public class FindFoodFragment extends Fragment {
         searchFood.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SearchFood fragment = new SearchFood();
+                SearchFood fragment = new SearchFood(getContext());
                 FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
                 transaction.replace(R.id.nav_host_fragment, fragment);
                 transaction.addToBackStack(null);

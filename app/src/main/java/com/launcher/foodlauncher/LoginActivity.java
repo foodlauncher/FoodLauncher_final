@@ -20,7 +20,6 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     EditText mEmail, mPassword;
     Button btnLogin;
-    ProgressBar progressBar;
     private String email;
     private String password;
     TextView createAccount;
@@ -36,7 +35,6 @@ public class LoginActivity extends AppCompatActivity {
         mEmail = findViewById(R.id.input_email);
         mPassword = findViewById(R.id.input_password);
         btnLogin = findViewById(R.id.btn_login);
-        progressBar = findViewById(R.id.progressBar2);
         createAccount = findViewById(R.id.create_new_account);
 
         btnLogin.setOnClickListener(v -> {
@@ -53,8 +51,6 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            progressBar.setVisibility(View.VISIBLE);
-
             //Authenticate the user
 
             mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
@@ -64,7 +60,6 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 else {
                     Toast.makeText(LoginActivity.this, "Error!" + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                    progressBar.setVisibility(View.GONE);
                 }
             });
         });

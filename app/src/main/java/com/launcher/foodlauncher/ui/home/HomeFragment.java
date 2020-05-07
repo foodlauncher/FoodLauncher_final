@@ -1,5 +1,7 @@
 package com.launcher.foodlauncher.ui.home;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.IntentSender;
 import android.location.Address;
 import android.location.Geocoder;
@@ -232,8 +234,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 return true;
             }
         });
-
-        hideSoftKeyboard();
     }
 
     private void geoLocate() {
@@ -336,15 +336,9 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
     private void hideSoftKeyboard() {
         Log.d("TAG", "hideSoftKeyboard: yes");
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
-
-        View view = getActivity().getCurrentFocus();
-
-        if(view == null) {
-            view = new View(getActivity());
-        }
-
-        imm.hideSoftInputFromWindow(autoCompleteTextView.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+        InputMethodManager inputMethodManager =(InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if(getActivity().getCurrentFocus() != null)
+            inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
     }
 
     void showRestaurants(double lat, double lon) {

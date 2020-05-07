@@ -21,7 +21,6 @@ public class SignUpActivity extends AppCompatActivity {
     Button btnSignUp;
     TextView login;
     FirebaseAuth fAuth;
-    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +35,6 @@ public class SignUpActivity extends AppCompatActivity {
         login = findViewById(R.id.login_here);
 
         fAuth = FirebaseAuth.getInstance();
-        progressBar = findViewById(R.id.progressBar);
 
         if (fAuth.getCurrentUser() != null) {
             startActivity(new Intent(getApplicationContext(), PermissionsActivity.class));
@@ -62,8 +60,6 @@ public class SignUpActivity extends AppCompatActivity {
                 return;
             }
 
-            progressBar.setVisibility(View.VISIBLE);
-
             //Register the user in firebase
 
             fAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener((task) -> {
@@ -72,7 +68,6 @@ public class SignUpActivity extends AppCompatActivity {
                     startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 } else {
                     Toast.makeText(SignUpActivity.this, "Error!" + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                    progressBar.setVisibility(View.GONE);
                 }
             });
 
