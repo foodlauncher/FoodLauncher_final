@@ -73,6 +73,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
+    private String tagHome = "HomeFragmentTag", tagFindFood = "FindFoodFragmentTag",
+            tagFavourite = "FavouritesFragmentTag", tagUser = "UserFragmentTag";
+
+    private double lat, lon;
+    private final String latitude_key = "latitude", longitude_key = "longitude", sort_key = "sort";
+    private String sort = "";
     private HomeViewModel homeViewModel;
 
     private BottomSheetBehavior bottomSheetBehavior;
@@ -85,8 +91,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private ImageButton btnFind, btnNearby;
     private RippleBackground rippleBg;
     private View mapView;
-    private double latitude;
-    private double longitude;
+    private double latitude = -1;
+    private double longitude = -1;
     private float DEFAULT_ZOOM = 16;
 
     AutoCompleteTextView autoCompleteTextView;
@@ -118,6 +124,22 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        if (savedInstanceState != null) {
+            lat = savedInstanceState.getDouble(latitude_key);
+            lon = savedInstanceState.getDouble(longitude_key);
+            if(savedInstanceState.getString(sort_key).length() != 0)
+                sort = savedInstanceState.getString(sort_key);
+            else
+                sort = "";
+            latitude = lat;
+            longitude = lon;
+            // Do something with value if needed
+        }
+
+        if(!(latitude == -1 && longitude == -1)) {
+            showRestaurants(latitude, longitude);
+        }
+
         String googleApiKey = "AIzaSyDNSYlMnfy-MUNl3MUoRjZDZWYD3WLg8AQ";
 
         chipGroup = getView().findViewById(R.id.chip_group);
@@ -141,7 +163,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
         if(!Places.isInitialized()) {
-            Places.initialize(getContext(), apiKey);
+            Places.initialize(getContext(), googleApiKey);
         }
 
         placesClient = Places.createClient(getActivity());
@@ -155,6 +177,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                     @Override
                     public void run() {
                         rippleBg.stopRippleAnimation();
+                        lat = latitude;
+                        lon = longitude;
                         showRestaurants(latitude, longitude);
                     }
                 }, 2000);
@@ -190,7 +214,10 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         task.addOnSuccessListener(getActivity(), new OnSuccessListener<LocationSettingsResponse>() {
             @Override
             public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-                getDeviceLocation();
+                if(latitude == -1 && longitude == -1)
+                    getDeviceLocation();
+                else
+                    geoLocate();
             }
         });
 
@@ -219,6 +246,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if(actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE || event.getAction() == KeyEvent.ACTION_DOWN || event.getAction() == KeyEvent.KEYCODE_ENTER) {
                     // execute our method for searching
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                     geoLocate();
                 }
                 return false;
@@ -269,6 +297,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                         @Override
                         public void run() {
                             rippleBg.stopRippleAnimation();
+                            lat = latitude;
+                            lon = longitude;
                             showRestaurants(latitude, longitude);
                         }
                     }, 2000);
@@ -357,7 +387,12 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
         ApiSearchInterface searchApi = retrofit.create(ApiSearchInterface.class);
 
-        call = searchApi.getResultBy(apiKey, lat, lon, sortByRating);
+        if(sort.length() == 0) {
+            call = searchApi.getResultBy(apiKey, lat, lon, sortByRating);
+            sort = sortByRating;
+        } else {
+            call = searchApi.getResultBy(apiKey, lat, lon, sort.toString());
+        }
         callEnqueue(call);
         chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
             @Override
@@ -366,16 +401,19 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 switch (checkedId) {
                     case R.id.chip_rating: {
                         call = searchApi.getResultBy(apiKey, lat, lon, sortByRating);
+                        sort = sortByRating;
                         callEnqueue(call);
                         break;
                     }
                     case R.id.chip_distance: {
                         call = searchApi.getResultBy(apiKey, lat, lon, sortByRealDistance);
+                        sort = sortByRealDistance;
                         callEnqueue(call);
                         break;
                     }
                     case R.id.chip_cost: {
                         call = searchApi.getResultBy(apiKey, lat, lon, sortByCost);
+                        sort = sortByCost;
                         callEnqueue(call);
                         break;
                     }
@@ -408,5 +446,13 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                 textViewResult.setText(t.getMessage());
             }
         });
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putDouble(latitude_key, lat);
+        outState.putDouble(longitude_key, lon);
+        outState.putString(sort_key, sort);
+        super.onSaveInstanceState(outState);
     }
 }

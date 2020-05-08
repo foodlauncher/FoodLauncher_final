@@ -10,10 +10,9 @@ public interface ApiComplexSearchInterface {
 
     @GET("complexSearch")
     Call<ComplexSearch> getSearchResult(@Query("apiKey") String apiKey, @Query("query") String query, @Query("diet") String diet,
-                                      @Query("intolerances") String intolerances, @Query("includeIngredients") String includeIngredients,
-                                      @Query("excludeIngredients") String excludeIngredients,
+                                      @Query("intolerances") String intolerances, @Query("excludeIngredients") String excludeIngredients,
                                       @Query("instructionsRequired") boolean instructionsRequired, @Query("type") String type,
-                                      @Query("addRecipeInformation") boolean addRecipeInformation, @Query("maxFat") int maxFat,
-                                      @Query("number") int number, @Query("cuisine") String cuisine, @Query("maxCalories") int maxCalories);
+                                      @Query("addRecipeInformation") boolean addRecipeInformation, @Query("maxFat") String maxFat,
+                                      @Query("number") int number, @Query("cuisine") String cuisine, @Query("maxCalories") String maxCalories);
 
 }

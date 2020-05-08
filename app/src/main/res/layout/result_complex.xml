@@ -14,6 +14,7 @@
         android:background="@drawable/bottomsheet_background"
         app:behavior_hideable="false"
         app:behavior_peekHeight="10dp"
+        android:paddingBottom="50dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <!-- Bottom Sheet contents -->

@@ -82,7 +82,10 @@ public class ListAdapterCheck extends RecyclerView.Adapter<ListAdapterCheck.View
             if(!selected.get(i).equals(""))
                 selectedValue.append(selected.get(i)).append(",");
         }
-        selectedValue.deleteCharAt(selectedValue.lastIndexOf(","));
+        if(selectedValue.length() == 0)
+            selectedValue.append("null");
+        else
+            selectedValue.deleteCharAt(selectedValue.lastIndexOf(","));
         return selectedValue.toString();
     }
 

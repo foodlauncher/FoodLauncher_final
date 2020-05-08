@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -45,8 +46,8 @@ public class SearchFood extends Fragment {
     private Button cuisineBtn, dietBtn, intolerancesBtn, mealBtn;
     private ImageButton btnFind;
 
-    private EditText query, include, exclude, maxFat, maxCalories;
-    private String meal, cuisine, diet, intolerances;
+    private EditText query, exclude, maxFat, maxCalories;
+    private StringBuilder meal, cuisine, diet, intolerances;
     RecyclerView recyclerCuisine, recyclerDiet, recyclerMeal, recyclerInt, recycleFood;
 
     BottomSheetBehavior foodBehaviour;
@@ -77,8 +78,12 @@ public class SearchFood extends Fragment {
         query = getView().findViewById(R.id.query);
         maxCalories = getView().findViewById(R.id.max_calories);
         maxFat = getView().findViewById(R.id.max_fat);
-        include = getView().findViewById(R.id.include);
         exclude = getView().findViewById(R.id.exclude);
+
+        meal = new StringBuilder();
+        diet = new StringBuilder();
+        intolerances = new StringBuilder();
+        cuisine = new StringBuilder();
 
         BottomSheetBehavior mealBehaviour, dietBehaviour, cuisineBehaviour, intBehaviour;
         FrameLayout mealBottom = getView().findViewById(R.id.bottom_input_meal);
@@ -159,12 +164,6 @@ public class SearchFood extends Fragment {
                 hideSoftKeyboard(query);
             }
         });
-        include.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                hideSoftKeyboard(include);
-            }
-        });
         exclude.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -181,16 +180,6 @@ public class SearchFood extends Fragment {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 hideSoftKeyboard(maxCalories);
-            }
-        });
-
-        include.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId == EditorInfo.IME_ACTION_NEXT || event.getAction() == KeyEvent.KEYCODE_ENTER || event.getAction() == KeyEvent.ACTION_DOWN) {
-                    exclude.setFocusable(true);
-                }
-                return false;
             }
         });
 
@@ -218,22 +207,38 @@ public class SearchFood extends Fragment {
             @Override
             public void onClick(View v) {
                 try {
-                    String querySearch = query.getText().toString();
-                    String includeIngredients = include.getText().toString();
-                    String excludeIngredients = exclude.getText().toString();
-                    int maxfat = Integer.parseInt(maxFat.getText().toString());
-                    int maxcalories = Integer.parseInt(maxCalories.getText().toString());
+                    StringBuilder querySearch = new StringBuilder();
+                    StringBuilder excludeIngredients = new StringBuilder();
+                    excludeIngredients.append("null");
+                    StringBuilder maxfat = new StringBuilder();
+                    StringBuilder maxcalories = new StringBuilder();
                     if(query.getText().toString().matches("")){
                         Toast.makeText(context, "Search query is compulsory", Toast.LENGTH_SHORT).show();
-                        query.setFocusable(true);
+                    } else if(maxCalories.getText().toString().matches("")) {
+                        Toast.makeText(context, "Maximum calories is required", Toast.LENGTH_SHORT).show();
+                    } else if(maxFat.getText().toString().matches("")){
+                        Toast.makeText(context, "Maximum Fat is requires", Toast.LENGTH_SHORT).show();
                     } else {
+                        querySearch.replace(0, querySearch.length(), query.getText().toString());
+                        maxcalories.replace(0, maxcalories.length(), maxCalories.getText().toString());
+                        maxfat.replace(0, maxfat.length(), maxFat.getText().toString());
+                        Log.i("TAG", "onClick: querySearch: " + querySearch);
+                        if(!exclude.getText().toString().matches(""))
+                            excludeIngredients.replace(0, excludeIngredients.length(), exclude.getText().toString());
+                            Log.i("TAG", "onClick: exclude: " + excludeIngredients);
 
-                        cuisine = cuisineAdapter.getCheckedValue();
-                        diet = dietAdapter.getCheckedValue();
-                        meal = mealAdapter.getCheckedValue();
-                        intolerances = intAdapter.getCheckedValue();
+                            diet.replace(0, diet.length(), dietAdapter.getCheckedValue());
+                        Log.i("TAG", "onClick: diet: " + diet);
+                            meal.replace(0, meal.length(), mealAdapter.getCheckedValue());
+                        Log.i("TAG", "onClick: meal: " + meal);
 
-                        searchFood(querySearch, cuisine, diet, meal, intolerances, includeIngredients, excludeIngredients, maxfat, maxcalories);
+                        cuisine.replace(0, cuisine.length(), cuisineAdapter.getCheckedValue());
+                        Log.i("TAG", "onClick: cuisine: " + cuisine);
+                            intolerances.replace(0, intolerances.length(), intAdapter.getCheckedValue());
+                        Log.i("TAG", "onClick: intolerances: " + intolerances);
+
+                        searchFood(querySearch.toString(), cuisine.toString(), diet.toString(), meal.toString(), intolerances.toString()
+                                , excludeIngredients.toString(), maxfat.toString(), maxcalories.toString());
                     }
 
                 } catch (Exception e) {
@@ -244,7 +249,7 @@ public class SearchFood extends Fragment {
     }
 
     private void searchFood (String searchQuery, String cuisine, String diet, String meal,
-                             String intolerances, String includeIng, String excludeIng, int maxF, int maxC) {
+                             String intolerances, String excludeIng, String maxF, String maxC) {
 
         textViewResult = getView().findViewById(R.id.text_view_result);
 
@@ -258,37 +263,54 @@ public class SearchFood extends Fragment {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
+        if(cuisine.equals("null"))
+            cuisine = "";
+        if(diet.equals("null"))
+            diet = "";
+        if(meal.equals("null"))
+            meal = "";
+        if(intolerances.equals("null"))
+            intolerances = "";
+        if(excludeIng.equals("null"))
+            excludeIng = "";
+
+
         ApiComplexSearchInterface apiComplexSearchInterface = retrofit.create(ApiComplexSearchInterface.class);
 
-        try {
-            Call<ComplexSearch> call = apiComplexSearchInterface.getSearchResult(apiKey, searchQuery, diet,
-                    intolerances, includeIng, excludeIng, true, meal, true, maxF, 30, cuisine, maxC);
+        Call<ComplexSearch> call = apiComplexSearchInterface.getSearchResult(apiKey, searchQuery, diet, intolerances, excludeIng,
+                true, meal, true, maxF, 99, cuisine, maxC);
 
-            call.enqueue(new Callback<ComplexSearch>() {
-                @Override
-                public void onResponse(Call<ComplexSearch> call, Response<ComplexSearch> response) {
-                    if(!response.isSuccessful()){
-                        textViewResult.setText("Response code: " + response.code() + call.request().toString());
-                        return;
-                    }
-                    ComplexSearch complexSearch = response.body();
+        call.enqueue(new Callback<ComplexSearch>() {
+            @Override
+            public void onResponse(Call<ComplexSearch> call, Response<ComplexSearch> response) {
+                if(!response.isSuccessful()){
+                    textViewResult.setText("Response code: " + response.code() + call.request().toString());
                     Log.i("TAG", "onResponse: url" + response.toString());
+                    foodBehaviour.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                    return;
+                }
+                ComplexSearch complexSearch = response.body();
 
+                if(complexSearch.getTotalResults() > 0) {
+                    Log.i("TAG", "onResponse: url" + response.toString());
                     List<Result> result = complexSearch.getResults();
 
                     recycleFood.setAdapter(new ComplexAdapter(result, R.layout.food_adapter, getContext()));
-
                     foodBehaviour.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
-                }
 
-                @Override
-                public void onFailure(Call<ComplexSearch> call, Throwable t) {
-                    textViewResult.setText(t.getMessage());
+                } else {
+                    androidx.appcompat.app.AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.setMessage("No food recipes available for searched filter!");
+                    alertDialog.show();
                 }
-            });
-        } catch (Exception e) {
-            Log.i("TAG", "onClick: EXCEPTION  : " + e.getMessage());
-        }
+            }
+
+            @Override
+            public void onFailure(Call<ComplexSearch> call, Throwable t) {
+                textViewResult.setText(t.getMessage());
+            }
+        });
     }
 
     private void hideSoftKeyboard(View v) {
@@ -296,5 +318,11 @@ public class SearchFood extends Fragment {
         InputMethodManager inputMethodManager =(InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         if(getActivity().getCurrentFocus() != null)
             inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+//        outState.putInt(SOME_VALUE_KEY, someStateValue);
+        super.onSaveInstanceState(outState);
     }
 }

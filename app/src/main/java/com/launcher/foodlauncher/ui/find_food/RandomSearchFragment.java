@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,8 +34,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RandomSearchFragment extends Fragment {
 
+    private String tagHome = "HomeFragmentTag", tagFindFood = "FindFoodFragmentTag",
+            tagFavourite = "FavouritesFragmentTag", tagUser = "UserFragmentTag";
+
+    private int someStateValue = 0;
+    private final String SOME_VALUE_KEY = "someValueToSave";
+
     private Context context;
-    private TextView rSelectedDiet, rSelectedMealType, rSelectedCuisine, textViewResult;
+    private TextView textViewResult;
 
     private Button cuisineBtn, dietBtn, mealBtn;
     private ImageButton btnFind;
@@ -65,10 +72,6 @@ public class RandomSearchFragment extends Fragment {
         dietBtn = getView().findViewById(R.id.diet_btn);
         mealBtn = getView().findViewById(R.id.meal_btn);
         btnFind = getView().findViewById(R.id.btn_find);
-
-        rSelectedCuisine = getView().findViewById(R.id.selected_cuisine);
-        rSelectedDiet = getView().findViewById(R.id.selected_diet);
-        rSelectedMealType = getView().findViewById(R.id.selected_meal);
 
         BottomSheetBehavior mealBehaviour, dietBehaviour, cuisineBehaviour, intBehaviour;
         FrameLayout mealBottom = getView().findViewById(R.id.bottom_input_meal);
@@ -105,6 +108,8 @@ public class RandomSearchFragment extends Fragment {
                 mealBehaviour.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
                 dietBehaviour.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 cuisineBehaviour.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                if(!mealAdapter.getCheckedValue().matches("null"))
+                    mealBtn.setText(mealAdapter.getCheckedValue());
             }
         });
         dietBtn.setOnClickListener(new View.OnClickListener() {
@@ -113,6 +118,8 @@ public class RandomSearchFragment extends Fragment {
                 dietBehaviour.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
                 mealBehaviour.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 cuisineBehaviour.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                if(!dietAdapter.getCheckedValue().matches("null"))
+                    dietBtn.setText(dietAdapter.getCheckedValue());
             }
         });
         cuisineBtn.setOnClickListener(new View.OnClickListener() {
@@ -121,6 +128,8 @@ public class RandomSearchFragment extends Fragment {
                 cuisineBehaviour.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
                 mealBehaviour.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 dietBehaviour.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                if(!cuisineAdapter.getCheckedValue().matches("null"))
+                    cuisineBtn.setText(cuisineAdapter.getCheckedValue());
             }
         });
 
@@ -132,13 +141,9 @@ public class RandomSearchFragment extends Fragment {
                     diet = dietAdapter.getCheckedValue();
                     meal = mealAdapter.getCheckedValue();
 
-                    rSelectedMealType.setVisibility(View.VISIBLE);
-                    rSelectedDiet.setVisibility(View.VISIBLE);
-                    rSelectedCuisine.setVisibility(View.VISIBLE);
-
-                    rSelectedCuisine.setText(cuisine);
-                    rSelectedDiet.setText(diet);
-                    rSelectedMealType.setText(meal);
+                    cuisineBehaviour.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                    mealBehaviour.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                    dietBehaviour.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
                     searchRandomFood(cuisine, diet, meal);
 
@@ -151,8 +156,14 @@ public class RandomSearchFragment extends Fragment {
 
     private void searchRandomFood (String cuisine, String diet, String meal) {
 
+        if(cuisine.equals("null"))
+            cuisine = "";
+        if(diet.equals("null"))
+            diet = "";
+        if(meal.equals("null"))
+            meal = "";
         StringBuilder tags = new StringBuilder();
-        tags.append(diet).append(",").append(meal).append(",").append(cuisine);
+        tags.append(diet).append(",").append(",").append(cuisine).append(meal);
         textViewResult = getView().findViewById(R.id.text_view_result);
 
         Log.d("TAG", "searchRandomFood: " + cuisine + " " + diet + " " + meal);
@@ -167,8 +178,7 @@ public class RandomSearchFragment extends Fragment {
 
         ApiRandomSearchInterface apiRandomSearchInterface = retrofit.create(ApiRandomSearchInterface.class);
 
-        try {
-        Call<RandomSearch> call = apiRandomSearchInterface.getRandomSearchResult(apiKey, 30, tags.toString().toLowerCase());
+        Call<RandomSearch> call = apiRandomSearchInterface.getRandomSearchResult(apiKey, 99, tags.toString().toLowerCase());
 
         call.enqueue(new Callback<RandomSearch>() {
             @Override
@@ -178,13 +188,21 @@ public class RandomSearchFragment extends Fragment {
                     return;
                 }
                 RandomSearch randomSearch = response.body();
-                Log.i("TAG", "onResponse: url" + response.toString());
 
-                List<Recipe> recipes = randomSearch.getRecipes();
+                if(randomSearch.getRecipes().size() > 0) {
+                    Log.i("TAG", "onResponse: url" + response.toString());
 
-                recycleFood.setAdapter(new FoodAdapter(recipes, R.layout.food_adapter, getContext()));
+                    List<Recipe> recipes = randomSearch.getRecipes();
 
-                foodBehaviour.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                    recycleFood.setAdapter(new FoodAdapter(recipes, R.layout.food_adapter, getContext()));
+
+                    foodBehaviour.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                } else {
+                    androidx.appcompat.app.AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.setMessage("No food recipes available for searched filter!");
+                    alertDialog.show();
+                }
             }
 
             @Override
@@ -192,8 +210,11 @@ public class RandomSearchFragment extends Fragment {
                 textViewResult.setText(t.getMessage());
             }
         });
-        } catch (Exception e) {
-            Log.i("TAG", "onClick: EXCEPTION  : " + e.getMessage());
-        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putInt(SOME_VALUE_KEY, someStateValue);
+        super.onSaveInstanceState(outState);
     }
 }

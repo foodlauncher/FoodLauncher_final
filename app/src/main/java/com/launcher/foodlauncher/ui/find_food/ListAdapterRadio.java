@@ -84,6 +84,8 @@ public class ListAdapterRadio extends RecyclerView.Adapter<ListAdapterRadio.View
     }
 
     public String getCheckedValue() {
+        if(selectedValue.get(0).length() == 0)
+            selectedValue.set(0, "null");
         return selectedValue.get(0);
     }
 

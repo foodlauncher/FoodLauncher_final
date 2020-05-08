@@ -1,6 +1,7 @@
 package com.launcher.foodlauncher;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -21,11 +22,13 @@ import androidx.navigation.ui.NavigationUI;
 
 public class MainActivity extends AppCompatActivity {
 
-    Toolbar toolbar;
-    HomeFragment homeFragment;
-    FindFoodFragment findFoodFragment;
-    FavouritesFragment favouritesFragment;
-    UserFragment userFragment;
+    private Toolbar toolbar;
+    private HomeFragment homeFragment;
+    private FindFoodFragment findFoodFragment;
+    private FavouritesFragment favouritesFragment;
+    private UserFragment userFragment;
+    private String tagHome = "HomeFragmentTag", tagFindFood = "FindFoodFragmentTag",
+            tagFavourite = "FavouritesFragmentTag", tagUser = "UserFragmentTag";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,11 +37,32 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
-        homeFragment = new HomeFragment();
-        findFoodFragment = new FindFoodFragment();
-        favouritesFragment = new FavouritesFragment();
-        userFragment = new UserFragment();
-
+        if (savedInstanceState != null) { // saved instance state, fragment may exist
+            // look up the instance that already exists by tag
+            homeFragment = (HomeFragment)
+                    getSupportFragmentManager().findFragmentByTag(tagHome);
+            Log.i("TAG", "onCreate: homeFragmentInstance: " + homeFragment.getTag());
+            findFoodFragment = (FindFoodFragment)
+                    getSupportFragmentManager().findFragmentByTag(tagFindFood);
+            favouritesFragment = (FavouritesFragment)
+                    getSupportFragmentManager().findFragmentByTag(tagFavourite);
+            userFragment = (UserFragment)
+                    getSupportFragmentManager().findFragmentByTag(tagUser);
+        } else if (homeFragment == null || findFoodFragment == null || favouritesFragment == null || userFragment == null) {
+            // only create fragment if they haven't been instantiated already
+            if (homeFragment == null) {
+                homeFragment = new HomeFragment();
+            }
+            if (findFoodFragment == null) {
+                findFoodFragment = new FindFoodFragment();
+            }
+            if (favouritesFragment == null) {
+                favouritesFragment = new FavouritesFragment();
+            }
+            if (userFragment == null) {
+                userFragment = new UserFragment();
+            }
+        }
         init();
 
         // Passing each menu ID as a set of Ids because each
@@ -58,19 +82,19 @@ public class MainActivity extends AppCompatActivity {
                 int itemId = item.getItemId();
                 switch(itemId) {
                     case R.id.navigation_home: {
-                        loadFragment(homeFragment, null);
+                        loadFragment(homeFragment, null, tagHome);
                         return true;
                     }
                     case R.id.navigation_find_food: {
-                        loadFragment(findFoodFragment, null);
+                        loadFragment(findFoodFragment, null, tagFindFood);
                         return true;
                     }
                     case R.id.navigation_favourites: {
-                        loadFragment(favouritesFragment, null);
+                        loadFragment(favouritesFragment, null, tagFavourite);
                         return true;
                     }
                     case R.id.navigation_user: {
-                        loadFragment(userFragment, null);
+                        loadFragment(userFragment, null, tagUser);
                         return true;
                     }
                 }
@@ -80,16 +104,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-        loadFragment(homeFragment, "");
+        loadFragment(homeFragment, "", tagHome);
     }
 
-    private void loadFragment(Fragment fragment, String comeFrom) {
+    private void loadFragment(Fragment fragment, String comeFrom, String tag) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         Bundle bundle = new Bundle();
         bundle.putString("come_from", comeFrom);
         fragment.setArguments(bundle);
-        transaction.replace(R.id.nav_host_fragment, fragment);
-        transaction.addToBackStack(null);
+        transaction.replace(R.id.nav_host_fragment, fragment, tag);
         transaction.commit();
     }
 }

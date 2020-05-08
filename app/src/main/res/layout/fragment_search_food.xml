@@ -65,20 +65,6 @@
             android:background="@drawable/search_background"/>
 
         <EditText
-            android:id="@+id/include"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Include ingredients e.g. cheese,butter"
-            android:padding="10dp"
-            android:layout_marginHorizontal="30dp"
-            android:layout_marginVertical="10dp"
-            android:background="@drawable/search_background"
-            android:maxLines="1"
-            android:imeOptions="actionNext"
-            android:inputType="text"
-            android:nextFocusDown="@id/exclude"/>
-
-        <EditText
             android:id="@+id/exclude"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
