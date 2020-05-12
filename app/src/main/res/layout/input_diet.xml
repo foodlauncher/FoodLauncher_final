@@ -26,7 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Select Diet"
-                android:textColor="#000000"
+                android:textColor="#000"
                 android:fontFamily="@font/montserrat_bold"
                 android:paddingVertical="20dp"
                 android:paddingHorizontal="25dp"

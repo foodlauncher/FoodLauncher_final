@@ -1,6 +1,7 @@
 package com.launcher.foodlauncher.ui.find_food;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.launcher.foodlauncher.R;
 import com.launcher.foodlauncher.ui.home.HomeFragment;
 
@@ -28,14 +30,16 @@ public class FindFoodFragment extends Fragment {
 
     private FindFoodViewModel findFoodViewModel;
 
-    private int fragSelected;
-    String fragKey = "selected_frag";
+    FirebaseAuth fAuth = FirebaseAuth.getInstance();
+
+    private SearchFood fragmentSearch;
+    private RandomSearchFragment fragmentRandom;
+    public int fragSelected = 0;
+    private String fragKey = "selected_frag";
 
     private Button searchFood, searchRandom;
 
-    private String tagHome = "HomeFragmentTag", tagFindFood = "FindFoodFragmentTag",
-            tagFavourite = "FavouritesFragmentTag", tagUser = "UserFragmentTag",
-            tagSearch = "SearchFragmentTag", tagRandom = "RandomSearchFragmentTag";
+    private String tagSearch = "SearchFragmentTag", tagRandom = "RandomSearchFragmentTag";
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -43,12 +47,7 @@ public class FindFoodFragment extends Fragment {
                 ViewModelProviders.of(this).get(FindFoodViewModel.class);
         View root = inflater.inflate(R.layout.fragment_find_food, container, false);
         final TextView textView = root.findViewById(R.id.text_find_food);
-        findFoodViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });
+
         return root;
     }
 
@@ -56,24 +55,38 @@ public class FindFoodFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        Log.i("FindFood", "onActivityCreated: savedInstance: " + (savedInstanceState!=null));
+        Log.i("FindFood", "onActivityCreated: fragSelected: " + fragSelected);
+
         if(savedInstanceState != null) {
-            fragSelected = savedInstanceState.getInt(fragKey);
+            String backFrom;
+            if(this.getArguments() != null) {
+                backFrom = this.getArguments().getString("comeFrom");
+                Log.i("FindFood", "onActivityCreated: comeFrom: " + backFrom);
+                if(backFrom.equals("search") || backFrom.equals("random")) {
+                    fragSelected = 0;
+                }
+            } else {
+                fragSelected = savedInstanceState.getInt(fragKey);
+            }
+            Log.i("FindFood", "onActivityCreated: fragSelected: " + fragSelected);
         }
 
         if(fragSelected == 1) {
-            SearchFood fragment = (SearchFood)
-                    getChildFragmentManager().findFragmentByTag(tagSearch);
-            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-            transaction.replace(R.id.nav_host_fragment, fragment, tagSearch);
-            transaction.commit();
+            Log.i("FindFood", "onActivityCreated: fragSelected: " + fragSelected);
+            fragmentSearch = (SearchFood) getParentFragmentManager().findFragmentByTag(tagSearch);
+            if(fragmentSearch == null)
+                fragmentSearch = new SearchFood(getContext());
+            loadFragment(fragmentSearch, "FindFoodFragment", tagSearch);
         }
 
         if(fragSelected == 2) {
-            RandomSearchFragment fragment = (RandomSearchFragment)
-                    getChildFragmentManager().findFragmentByTag(tagRandom);
-            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-            transaction.replace(R.id.nav_host_fragment, fragment, tagRandom);
-            transaction.commit();
+            Log.i("FindFood", "onActivityCreated: fragSelected: " + fragSelected);
+
+            fragmentRandom = (RandomSearchFragment) getParentFragmentManager().findFragmentByTag(tagRandom);
+            if(fragmentRandom == null)
+                fragmentRandom = new RandomSearchFragment(getContext());
+            loadFragment(fragmentRandom, "FindFoodFragment", tagRandom);
         }
 
         searchFood = getView().findViewById(R.id.search_btn);
@@ -83,10 +96,14 @@ public class FindFoodFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 fragSelected = 1;
-                SearchFood fragment = new SearchFood(getContext());
-                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                transaction.replace(R.id.nav_host_fragment, fragment, tagSearch);
-                transaction.commit();
+                Log.i("FindFood", "onActivityCreated: fragSelected: " + fragSelected);
+                if(fragmentSearch != null) {
+                    fragmentSearch = (SearchFood)
+                            getParentFragmentManager().findFragmentByTag(tagSearch);
+                }
+                if(fragmentSearch == null)
+                    fragmentSearch = new SearchFood(getContext());
+                loadFragment(fragmentSearch, "FindFoodFragment", tagSearch);
             }
         });
 
@@ -94,17 +111,37 @@ public class FindFoodFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 fragSelected = 2;
-                RandomSearchFragment fragment = new RandomSearchFragment(getContext());
-                FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                transaction.replace(R.id.nav_host_fragment, fragment, tagRandom);
-                transaction.commit();
+                Log.i("FindFood", "onActivityCreated: fragSelected: " + fragSelected);
+                if(fragmentRandom != null) {
+                    fragmentRandom = (RandomSearchFragment)
+                            getParentFragmentManager().findFragmentByTag(tagRandom);
+                }
+                if(fragmentRandom == null)
+                    fragmentRandom = new RandomSearchFragment(getContext());
+                loadFragment(fragmentRandom, "FindFoodFragment", tagRandom);
             }
         });
+
+
+    }
+
+    private void loadFragment(Fragment fragment, String comeFrom, String tag) {
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        Bundle bundle = new Bundle();
+        bundle.putString("come_from", comeFrom);
+        fragment.setArguments(bundle);
+        transaction.replace(R.id.nav_host_fragment, fragment, tag)
+                .addToBackStack(null);
+        transaction.commit();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        if(fragSelected!=1 && fragSelected!=2)
+            fragSelected = 0;
+        Log.i("FindFood", "onSaveInstanceState: fragSelected: " + fragSelected);
         outState.putInt(fragKey, fragSelected);
         super.onSaveInstanceState(outState);
     }
+
 }

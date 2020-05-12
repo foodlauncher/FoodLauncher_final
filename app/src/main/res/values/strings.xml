@@ -2,6 +2,7 @@
     <string name="app_name">FoodLauncher</string>
     <string name="create_new_account"><u>Create new account</u></string>
     <string name="log_in"><u>Login here!</u></string>
+    <string name="open_menu"><u>Open menu</u></string>
     <string name="title_activity_main2">Main2Activity</string>
     <string name="title_home">Home</string>
     <string name="title_find_food">Find Food</string>

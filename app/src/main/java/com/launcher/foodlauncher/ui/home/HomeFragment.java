@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.RadioGroup;
@@ -56,6 +57,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.radiobutton.MaterialRadioButton;
+import com.google.firebase.auth.FirebaseAuth;
 import com.launcher.foodlauncher.R;
 import com.launcher.foodlauncher.adapter.PlaceAutoSuggestAdapter;
 import com.launcher.foodlauncher.api.ApiSearchInterface;
@@ -73,13 +75,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
-    private String tagHome = "HomeFragmentTag", tagFindFood = "FindFoodFragmentTag",
-            tagFavourite = "FavouritesFragmentTag", tagUser = "UserFragmentTag";
-
     private double lat, lon;
     private final String latitude_key = "latitude", longitude_key = "longitude", sort_key = "sort";
     private String sort = "";
     private HomeViewModel homeViewModel;
+
+    FirebaseAuth fAuth = FirebaseAuth.getInstance();
 
     private BottomSheetBehavior bottomSheetBehavior;
 
@@ -89,6 +90,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     private Location mLastKnownLocation;
     private LocationCallback locationCallback;
     private ImageButton btnFind, btnNearby;
+    private Button sortRating, sortDistance, sortCost;
     private RippleBackground rippleBg;
     private View mapView;
     private double latitude = -1;
@@ -108,7 +110,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
     List<Restaurant> restaurants1;
 
-    ChipGroup chipGroup;
     Call<Search> call;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -135,6 +136,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             longitude = lon;
             // Do something with value if needed
         }
+        Log.i("HomeFragment", "onActivityCreated: saveInstanceState: " + (savedInstanceState != null));
 
         if(!(latitude == -1 && longitude == -1)) {
             showRestaurants(latitude, longitude);
@@ -142,7 +144,9 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
         String googleApiKey = "AIzaSyDNSYlMnfy-MUNl3MUoRjZDZWYD3WLg8AQ";
 
-        chipGroup = getView().findViewById(R.id.chip_group);
+        sortCost = getView().findViewById(R.id.sort_cost);
+        sortDistance = getView().findViewById(R.id.sort_distance);
+        sortRating = getView().findViewById(R.id.sort_rating);
 
         FrameLayout bottomSheetLayout = getView().findViewById(R.id.standardBottomSheet);
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetLayout);
@@ -216,8 +220,10 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
                 if(latitude == -1 && longitude == -1)
                     getDeviceLocation();
-                else
+                else {
+                    moveCamera(new LatLng(latitude, longitude), DEFAULT_ZOOM, "Default");
                     geoLocate();
+                }
             }
         });
 
@@ -239,7 +245,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void init() {
-        Log.d("TAG", "init: Initializing");
+        Log.d("HomeFragment", "init: Initializing");
 
         autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -265,7 +271,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void geoLocate() {
-        Log.d("TAG", "geoLocate: geolocating");
+        Log.d("HomeFragment", "geoLocate: geolocating");
 
         String searchString = autoCompleteTextView.getText().toString();
 
@@ -274,13 +280,13 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         try {
             list = geocoder.getFromLocationName(searchString, 1);
         } catch (IOException e) {
-            Log.e("TAG", "geoLocate: IOException: " + e.getMessage() );
+            Log.e("HomeFragment", "geoLocate: IOException: " + e.getMessage() );
         }
 
         if(list.size() > 0) {
             Address address = list.get(0);
 
-            Log.d("TAG", "geoLocate: found a location: " + address.toString());
+            Log.d("HomeFragment", "geoLocate: found a location: " + address.toString());
 
             moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), DEFAULT_ZOOM, address.getAddressLine(0));
 
@@ -309,7 +315,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void moveCamera (LatLng latlng, float zoom, String title) {
-        Log.d("TAG", "moveCamera: Moving the camera to: lat: " + latlng.latitude + ", lng: " + latlng.longitude);
+        Log.d("HomeFragment", "moveCamera: Moving the camera to: lat: " + latlng.latitude + ", lng: " + latlng.longitude);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, zoom));
 
         if(!title.equals("My location")){
@@ -330,7 +336,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                         if (task.isSuccessful()) {
                             mLastKnownLocation = task.getResult();
                             if(mLastKnownLocation != null) {
-                                Log.d("TAG", "onComplete: ID: " + mLastKnownLocation.getLatitude() + " " + mLastKnownLocation.getLongitude());
+                                Log.d("HomeFragment", "onComplete: ID: " + mLastKnownLocation.getLatitude() + " " + mLastKnownLocation.getLongitude());
                                 moveCamera(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM, "Current Location");
                                 latitude = mLastKnownLocation.getLatitude();
                                 longitude = mLastKnownLocation.getLongitude();
@@ -348,7 +354,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                                             return;
                                         }
                                         mLastKnownLocation = locationResult.getLastLocation();
-                                        Log.d("TAG", "onComplete: ID: " + mLastKnownLocation.getLatitude() + " " + mLastKnownLocation.getLongitude());
+                                        Log.d("HomeFragment", "onComplete: ID: " + mLastKnownLocation.getLatitude() + " " + mLastKnownLocation.getLongitude());
                                         moveCamera(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM, "Current Location");
                                         latitude = mLastKnownLocation.getLatitude();
                                         longitude = mLastKnownLocation.getLongitude();
@@ -357,6 +363,8 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
                                 };
                                 mFusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
                             }
+                            lat = latitude;
+                            lon = longitude;
                         } else {
                             Toast.makeText(getActivity(), "Unable to get current location", Toast.LENGTH_SHORT).show();
                         }
@@ -365,7 +373,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void hideSoftKeyboard() {
-        Log.d("TAG", "hideSoftKeyboard: yes");
+        Log.d("HomeFragment", "hideSoftKeyboard: yes");
         InputMethodManager inputMethodManager =(InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         if(getActivity().getCurrentFocus() != null)
             inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
@@ -375,7 +383,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
         textViewResult = getView().findViewById(R.id.text_view_result);
 
-        Log.d("TAG", "onCreate: " + latitude + " " + longitude);
+        Log.d("HomeFragment", "onCreate: " + latitude + " " + longitude);
 
         recyclerView = (RecyclerView) getView().findViewById(R.id.recycle);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -391,42 +399,50 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             call = searchApi.getResultBy(apiKey, lat, lon, sortByRating);
             sort = sortByRating;
         } else {
-            call = searchApi.getResultBy(apiKey, lat, lon, sort.toString());
+            call = searchApi.getResultBy(apiKey, lat, lon, sort);
         }
         callEnqueue(call);
-        chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
+
+        sortRating.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(ChipGroup group, @IdRes int checkedId) {
-                // Handle the checked chip change.
-                switch (checkedId) {
-                    case R.id.chip_rating: {
-                        call = searchApi.getResultBy(apiKey, lat, lon, sortByRating);
-                        sort = sortByRating;
-                        callEnqueue(call);
-                        break;
-                    }
-                    case R.id.chip_distance: {
-                        call = searchApi.getResultBy(apiKey, lat, lon, sortByRealDistance);
-                        sort = sortByRealDistance;
-                        callEnqueue(call);
-                        break;
-                    }
-                    case R.id.chip_cost: {
-                        call = searchApi.getResultBy(apiKey, lat, lon, sortByCost);
-                        sort = sortByCost;
-                        callEnqueue(call);
-                        break;
-                    }
-                }
+            public void onClick(View v) {
+                sortRating.setBackgroundResource(R.drawable.chip_s);
+                sortDistance.setBackgroundResource(R.drawable.chip_ns);
+                sortCost.setBackgroundResource(R.drawable.chip_ns);
+                call = searchApi.getResultBy(apiKey, lat, lon, sortByRating);
+                callEnqueue(call);
             }
         });
+
+        sortDistance.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sortRating.setBackgroundResource(R.drawable.chip_ns);
+                sortDistance.setBackgroundResource(R.drawable.chip_s);
+                sortCost.setBackgroundResource(R.drawable.chip_ns);
+                call = searchApi.getResultBy(apiKey, lat, lon, sortByRealDistance);
+                callEnqueue(call);
+            }
+        });
+
+        sortCost.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sortRating.setBackgroundResource(R.drawable.chip_ns);
+                sortDistance.setBackgroundResource(R.drawable.chip_ns);
+                sortCost.setBackgroundResource(R.drawable.chip_s);
+                call = searchApi.getResultBy(apiKey, lat, lon, sortByCost);
+                callEnqueue(call);
+            }
+        });
+
     }
 
     private void callEnqueue (Call call){
         call.enqueue(new Callback<Search>() {
             @Override
             public void onResponse(Call<Search> call, Response<Search> response) {
-                Log.i("TAG", "onResponse: call called");
+                Log.i("HomeFragment", "onResponse: Restaurants call called");
                 if (!response.isSuccessful()) {
                     textViewResult.setText("Response code: " + response.code());
                     return;
@@ -436,7 +452,12 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
 
                 restaurants1 = search.getRestaurants();
 
-                recyclerView.setAdapter(new Adapter(restaurants1, R.layout.restaurant_adapter, getContext()));
+                if(restaurants1.size() == 0) {
+                    textViewResult.setText("No restaurants found!!");
+                    textViewResult.setVisibility(View.VISIBLE);
+                } else {
+                    recyclerView.setAdapter(new Adapter(restaurants1, R.layout.restaurant_adapter, getContext()));
+                }
 
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
             }
@@ -444,6 +465,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void onFailure(Call<Search> call, Throwable t) {
                 textViewResult.setText(t.getMessage());
+                textViewResult.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -454,5 +476,7 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback {
         outState.putDouble(longitude_key, lon);
         outState.putString(sort_key, sort);
         super.onSaveInstanceState(outState);
+
+        getParentFragmentManager().putFragment(outState, "HomeFragment", this);
     }
 }

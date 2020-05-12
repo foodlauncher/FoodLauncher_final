@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.find_food.RandomSearchFragment"
     android:orientation="vertical"
-    android:background="#EEEEEE">
+    android:background="#EEE">
 
 
     <LinearLayout
@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Search food.."
-            android:padding="10dp"
+            android:padding="5dp"
             android:layout_marginHorizontal="30dp"
             android:layout_marginVertical="10dp"
             android:background="@drawable/search_background"
@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:text="Diet"
             android:layout_marginHorizontal="30dp"
-            android:layout_marginVertical="10dp"
+            android:layout_marginVertical="5dp"
             android:background="@drawable/search_background"/>
 
         <androidx.appcompat.widget.AppCompatButton
@@ -43,7 +43,7 @@
             android:layout_height="wrap_content"
             android:text="Meal Type"
             android:layout_marginHorizontal="30dp"
-            android:layout_marginVertical="10dp"
+            android:layout_marginVertical="5dp"
             android:background="@drawable/search_background"/>
 
         <androidx.appcompat.widget.AppCompatButton
@@ -52,7 +52,7 @@
             android:layout_height="wrap_content"
             android:text="Cuisines"
             android:layout_marginHorizontal="30dp"
-            android:layout_marginVertical="10dp"
+            android:layout_marginVertical="5dp"
             android:background="@drawable/search_background"/>
 
         <androidx.appcompat.widget.AppCompatButton
@@ -61,7 +61,7 @@
             android:layout_height="wrap_content"
             android:text="Intolerances"
             android:layout_marginHorizontal="30dp"
-            android:layout_marginVertical="10dp"
+            android:layout_marginVertical="5dp"
             android:background="@drawable/search_background"/>
 
         <EditText
@@ -69,7 +69,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Exclude Ingredients e.g. egg,milk"
-            android:padding="10dp"
+            android:padding="5dp"
             android:layout_marginHorizontal="30dp"
             android:layout_marginVertical="10dp"
             android:background="@drawable/search_background"
@@ -83,7 +83,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Maximum calories e.g. 800"
-            android:padding="10dp"
+            android:padding="5dp"
             android:layout_marginHorizontal="30dp"
             android:layout_marginVertical="10dp"
             android:background="@drawable/search_background"
@@ -97,7 +97,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Maximum Fat in gms e.g. 100"
-            android:padding="10dp"
+            android:padding="5dp"
             android:layout_marginHorizontal="30dp"
             android:layout_marginVertical="10dp"
             android:imeOptions="actionNext"
@@ -112,7 +112,7 @@
             android:outlineSpotShadowColor="@color/LightGray"
             android:outlineAmbientShadowColor="@color/LightGray"
             android:background="@drawable/btn_background"
-            android:textColor="@color/colorAccent"
+            android:textColor="@color/white"
             android:src="@drawable/ic_search"
             android:layout_marginBottom="120dp"
             android:elevation="5dp"

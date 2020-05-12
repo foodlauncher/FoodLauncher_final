@@ -29,64 +29,56 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Restaurants"
-                android:textColor="#000000"
                 android:fontFamily="@font/montserrat_bold"
                 android:paddingVertical="20dp"
                 android:paddingHorizontal="25dp"
                 android:textSize="25sp"
+                android:textColor="#000"
                 android:layout_marginBottom="15dp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_marginBottom="5dp">
 
                 <TextView
                     android:id="@+id/sort"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="10dp"
+                    android:padding="7dp"
+                    android:textColor="#000"
                     android:text="Sort By: " />
 
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/chip_group"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:checkedChip="@+id/chip_rating"
-                    app:singleLine="true"
-                    app:singleSelection="true">
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/sort_rating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:text="Rating"
+                    android:fontFamily="@font/montserrat"
+                    android:textColor="@color/white"
+                    android:layout_marginHorizontal="5dp"
+                    android:background="@drawable/chip_s"/>
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chip_rating"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="10dp"
-                        android:checkable="true"
-                        android:padding="12dp"
-                        android:text="Rating" />
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/sort_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:text="Distance"
+                    android:fontFamily="@font/montserrat"
+                    android:textColor="@color/white"
+                    android:layout_marginHorizontal="5dp"
+                    android:background="@drawable/chip_ns"/>
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chip_distance"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="10dp"
-                        android:checkable="true"
-                        android:padding="10dp"
-                        android:text="Distance" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chip_cost"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="10dp"
-                        android:checkable="true"
-                        android:padding="10dp"
-                        android:text="Cost" />
-
-                </com.google.android.material.chip.ChipGroup>
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/sort_cost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:text="Cost"
+                    android:fontFamily="@font/montserrat"
+                    android:layout_marginHorizontal="5dp"
+                    android:textColor="@color/white"
+                    android:background="@drawable/chip_ns"/>
 
 
             </LinearLayout>
@@ -102,7 +94,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/text_view_result" />
+                android:id="@+id/text_view_result"/>
 
         </LinearLayout>
 

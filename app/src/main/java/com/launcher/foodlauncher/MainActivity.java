@@ -1,10 +1,13 @@
 package com.launcher.foodlauncher;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.launcher.foodlauncher.ui.favourites.FavouritesFragment;
 import com.launcher.foodlauncher.ui.find_food.FindFoodFragment;
 import com.launcher.foodlauncher.ui.home.HomeFragment;
@@ -22,6 +25,7 @@ import androidx.navigation.ui.NavigationUI;
 
 public class MainActivity extends AppCompatActivity {
 
+    private FirebaseAuth mAuth;
     private Toolbar toolbar;
     private HomeFragment homeFragment;
     private FindFoodFragment findFoodFragment;
@@ -30,12 +34,16 @@ public class MainActivity extends AppCompatActivity {
     private String tagHome = "HomeFragmentTag", tagFindFood = "FindFoodFragmentTag",
             tagFavourite = "FavouritesFragmentTag", tagUser = "UserFragmentTag";
 
+    private Fragment currentFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
         BottomNavigationView navView = findViewById(R.id.nav_view);
+
+        mAuth = FirebaseAuth.getInstance();
 
         if (savedInstanceState != null) { // saved instance state, fragment may exist
             // look up the instance that already exists by tag
@@ -82,19 +90,19 @@ public class MainActivity extends AppCompatActivity {
                 int itemId = item.getItemId();
                 switch(itemId) {
                     case R.id.navigation_home: {
-                        loadFragment(homeFragment, null, tagHome);
+                        loadFragment(homeFragment, "MainActivity", tagHome);
                         return true;
                     }
                     case R.id.navigation_find_food: {
-                        loadFragment(findFoodFragment, null, tagFindFood);
+                        loadFragment(findFoodFragment, "main", tagFindFood);
                         return true;
                     }
                     case R.id.navigation_favourites: {
-                        loadFragment(favouritesFragment, null, tagFavourite);
+                        loadFragment(favouritesFragment, "MainActivity", tagFavourite);
                         return true;
                     }
                     case R.id.navigation_user: {
-                        loadFragment(userFragment, null, tagUser);
+                        loadFragment(userFragment, "MainActivity", tagUser);
                         return true;
                     }
                 }
@@ -104,15 +112,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-        loadFragment(homeFragment, "", tagHome);
+        loadFragment(homeFragment, "Main", tagHome);
     }
 
     private void loadFragment(Fragment fragment, String comeFrom, String tag) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         Bundle bundle = new Bundle();
-        bundle.putString("come_from", comeFrom);
+        Log.i("MainActivity", "loadFragment: Fragment created: " + tag);
+        currentFragment = fragment;
+        bundle.putString("comefrom", comeFrom);
         fragment.setArguments(bundle);
         transaction.replace(R.id.nav_host_fragment, fragment, tag);
+        transaction.addToBackStack(null);
         transaction.commit();
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        //Save the fragment's instance
+        getSupportFragmentManager().putFragment(outState, "CurrentFragment", currentFragment);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if(currentUser == null){
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+        }
+    }
+
 }

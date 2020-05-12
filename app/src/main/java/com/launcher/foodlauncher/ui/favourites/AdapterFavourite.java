@@ -1,4 +1,4 @@
-package com.launcher.foodlauncher.ui.home;
+package com.launcher.foodlauncher.ui.favourites;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -6,11 +6,9 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,8 +26,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -37,18 +33,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.launcher.foodlauncher.PermissionsActivity;
 import com.launcher.foodlauncher.R;
-import com.launcher.foodlauncher.SignUpActivity;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 
-public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
+public class AdapterFavourite extends RecyclerView.Adapter<AdapterFavourite.ViewHolder>{
 
-    private List<Restaurant> restaurants;
+    private List<FavRestaurants> restaurants;
     private Context context;
     private int rowLayout;
     GradientDrawable shape = new GradientDrawable();
@@ -75,7 +66,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
         }
     }
 
-    public Adapter(List<Restaurant> restaurants, int rowLayout, Context context) {
+    public AdapterFavourite(List<FavRestaurants> restaurants, int rowLayout, Context context) {
         this.restaurants = restaurants;
         this.rowLayout = rowLayout;
         this.context = context;
@@ -85,7 +76,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
 
     @NonNull
     @Override
-    public Adapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public AdapterFavourite.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(rowLayout, parent, false);
         return new ViewHolder(view);
     }
@@ -93,14 +84,14 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("SetTextI18n")
     @Override
-    public void onBindViewHolder(Adapter.ViewHolder holder, int position) {
-        holder.textOne.setText(restaurants.get(position).getRestaurant().getName());
-        holder.textTwo.setText(restaurants.get(position).getRestaurant().getLocation().getAddress());
-        holder.textThree.setText("Rating: " + restaurants.get(position).getRestaurant().getUserRating().getAggregateRating());
+    public void onBindViewHolder(AdapterFavourite.ViewHolder holder, int position) {
+        holder.textOne.setText(restaurants.get(position).getResName());
+        holder.textTwo.setText(restaurants.get(position).getResAddress());
+        holder.textThree.setText("Rating: " + restaurants.get(position).getResRating());
 
-        if(restaurants.get(position).getRestaurant().getThumb() != "") {
+        if(restaurants.get(position).getResThumb() != "") {
             Glide.with(context)
-                    .load(restaurants.get(position).getRestaurant().getThumb())
+                    .load(restaurants.get(position).getResThumb())
                     .into(holder.resImage);
         }
 
@@ -127,19 +118,20 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
                 RelativeLayout rate = dialogView.findViewById(R.id.rel_rating);
 
                 ImageButton addFav = dialogView.findViewById(R.id.add_fav);
+                addFav.setVisibility(View.GONE);
                 ImageButton addedFav = dialogView.findViewById(R.id.added_fav);
 
-                resName.setText(restaurants.get(position).getRestaurant().getName());
-                resAddress.setText(restaurants.get(position).getRestaurant().getLocation().getAddress());
-                resCuisines.setText(restaurants.get(position).getRestaurant().getCuisines());
-                resTimings.setText("Open Hours: " + restaurants.get(position).getRestaurant().getTimings());
-                resRating.setText(restaurants.get(position).getRestaurant().getUserRating().getAggregateRating());
+                resName.setText(restaurants.get(position).getResName());
+                resAddress.setText(restaurants.get(position).getResAddress());
+                resCuisines.setText(restaurants.get(position).getResCuisines());
+                resTimings.setText("Open Hours: " + restaurants.get(position).getResTimings());
+                resRating.setText(restaurants.get(position).getResRating());
                 shape.setShape(GradientDrawable.RECTANGLE);
                 shape.setCornerRadii(new float[] { 16, 16, 16, 16, 16, 16, 16, 16 });
-                shape.setColor(Color.parseColor("#" + restaurants.get(position).getRestaurant().getUserRating().getRatingColor()));
+                shape.setColor(Color.parseColor("#" + restaurants.get(position).getRatingColor()));
                 rate.setBackground(shape);
-                costForTwo.setText("Average cost for two: Rs. " + restaurants.get(position).getRestaurant().getAverageCostForTwo());
-                if(restaurants.get(position).getRestaurant().getIsTableReservationSupported() == 0) {
+                costForTwo.setText("Average cost for two: Rs. " + restaurants.get(position).getAvgCostForTwo());
+                if(restaurants.get(position).getTableRes().equals("0")) {
                     tableReservation.setText("Table reservation is not supported.");
                 } else {
                     tableReservation.setText("Table reservation is not supported.");
@@ -152,7 +144,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         long totalChildren = dataSnapshot.getChildrenCount();
                         for(long i=0; i<totalChildren; i++) {
-                            if(dataSnapshot.hasChild(restaurants.get(position).getRestaurant().getId())) {
+                            if(dataSnapshot.hasChild(restaurants.get(position).getResId())) {
                                 addFav.setVisibility(View.GONE);
                                 addedFav.setVisibility(View.VISIBLE);
                             }
@@ -175,20 +167,10 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
                     }
                 });
 
-                addFav.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        addToFavList(position);
-                        addFav.setVisibility(View.GONE);
-                        addedFav.setVisibility(View.VISIBLE);
-                    }
-                });
-
                 addedFav.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         removeFromFav(position);
-                        addFav.setVisibility(View.VISIBLE);
                         addedFav.setVisibility(View.GONE);
                     }
                 });
@@ -196,16 +178,16 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
                 resMenu.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Uri uriUrl = Uri.parse(restaurants.get(position).getRestaurant().getMenuUrl());
+                        Uri uriUrl = Uri.parse(restaurants.get(position).getMenuLink());
                         Intent launchBrowser = new Intent(Intent.ACTION_VIEW, uriUrl);
                         launchBrowser.addCategory(Intent.CATEGORY_BROWSABLE);
                         context.startActivity(launchBrowser);
                     }
                 });
 
-                if(!restaurants.get(position).getRestaurant().getPhoneNumbers().equals("Not available for this place")) {
-                    resPhone.setText("Phone number: " + restaurants.get(position).getRestaurant().getPhoneNumbers());
-                    Uri u = Uri.parse("tel:" + restaurants.get(position).getRestaurant().getPhoneNumbers());
+                if(!restaurants.get(position).getResPhone().equals("Not available for this place")) {
+                    resPhone.setText("Phone number: " + restaurants.get(position).getResPhone());
+                    Uri u = Uri.parse("tel:" + restaurants.get(position).getResPhone());
                     callBtn.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -237,52 +219,10 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
         });
     }
 
-    private void addToFavList(int position) {
-
-        String saveCurrentTime, saveCurrentDate;
-
-        Calendar calForDate = Calendar.getInstance();
-        SimpleDateFormat currentDate = new SimpleDateFormat("MMM dd, yyyy");
-        saveCurrentDate = currentDate.format(calForDate.getTime());
-
-        SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm:ss a");
-        saveCurrentTime = currentDate.format(calForDate.getTime());
-
-        String resId = restaurants.get(position).getRestaurant().getId();
-        final DatabaseReference favListRef = FirebaseDatabase.getInstance().getReference().child("Fav List");
-
-        final HashMap<String,Object> favMap = new HashMap<>();
-        favMap.put("resName", restaurants.get(position).getRestaurant().getName());
-        favMap.put("menuLink", restaurants.get(position).getRestaurant().getMenuUrl());
-        favMap.put("date", saveCurrentDate + saveCurrentTime);
-        favMap.put("resCuisines", restaurants.get(position).getRestaurant().getCuisines());
-        favMap.put("resId", restaurants.get(position).getRestaurant().getId());
-        favMap.put("resTimings", restaurants.get(position).getRestaurant().getTimings());
-        favMap.put("resRating", restaurants.get(position).getRestaurant().getUserRating().getAggregateRating());
-        favMap.put("resAddress", restaurants.get(position).getRestaurant().getLocation().getAddress());
-        favMap.put("resPhone", restaurants.get(position).getRestaurant().getPhoneNumbers());
-        favMap.put("avgCostForTwo", restaurants.get(position).getRestaurant().getAverageCostForTwo());
-        favMap.put("tableRes", restaurants.get(position).getRestaurant().getIsTableReservationSupported());
-        favMap.put("ratingColor", restaurants.get(position).getRestaurant().getUserRating().getRatingColor());
-        favMap.put("resThumb", restaurants.get(position).getRestaurant().getThumb());
-
-        if (currentUser != null) {
-            favListRef.child("User").child(currentUser.getUid()).child("Restaurants")
-                    .child(resId).updateChildren(favMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(context.getApplicationContext(), "Restaurant added to Favourites", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        }
-    }
-
     private void removeFromFav (int position) {
         final DatabaseReference favListRef = FirebaseDatabase.getInstance().getReference().child("Fav List")
                 .child("User").child(currentUser.getUid()).child("Restaurants")
-                .child(restaurants.get(position).getRestaurant().getId());
+                .child(restaurants.get(position).getResId());
 
         favListRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -297,7 +237,6 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
             }
         });
     }
-
 
     void openWhatsApp(View view){
         PackageManager pm = context.getPackageManager();

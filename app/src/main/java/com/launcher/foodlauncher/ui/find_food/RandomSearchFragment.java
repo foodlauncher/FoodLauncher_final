@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,6 +20,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.firebase.auth.FirebaseAuth;
 import com.launcher.foodlauncher.R;
 import com.launcher.foodlauncher.api.ApiRandomSearchInterface;
 
@@ -32,17 +34,14 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class RandomSearchFragment extends Fragment {
-
-    private String tagHome = "HomeFragmentTag", tagFindFood = "FindFoodFragmentTag",
-            tagFavourite = "FavouritesFragmentTag", tagUser = "UserFragmentTag";
-
-    private int someStateValue = 0;
-    private final String SOME_VALUE_KEY = "someValueToSave";
+public class RandomSearchFragment extends BackableFragment {
 
     private Context context;
     private TextView textViewResult;
 
+    FirebaseAuth fAuth = FirebaseAuth.getInstance();
+
+    String tagFindFood = "FindFoodFragmentTag";
     private Button cuisineBtn, dietBtn, mealBtn;
     private ImageButton btnFind;
 
@@ -84,8 +83,17 @@ public class RandomSearchFragment extends Fragment {
         foodBehaviour = BottomSheetBehavior.from(foodBottom);
 
         String[] cuisineArray = getResources().getStringArray(R.array.cuisines);
-        String[] dietArray = getResources().getStringArray(R.array.diets);
         String[] mealArray = getResources().getStringArray(R.array.meal_types);
+        String[] dietArray = getResources().getStringArray(R.array.diets);
+
+        if(savedInstanceState != null) {
+            Log.i("SearchFood", "onActivityCreated: Instance saved!");
+            meal = savedInstanceState.getString("meal");
+            diet = savedInstanceState.getString("diet");
+            cuisine = savedInstanceState.getString("cuisine");
+
+            searchRandomFood(cuisine, diet, meal);
+        }
 
         recyclerMeal = getView().findViewById(R.id.recycle_meal);
         recyclerMeal.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -214,7 +222,23 @@ public class RandomSearchFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putInt(SOME_VALUE_KEY, someStateValue);
+        outState.putString("cuisine", cuisine);
+        outState.putString("diet", diet);
+        outState.putString("meal", meal);
         super.onSaveInstanceState(outState);
+
+        getParentFragmentManager().putFragment(outState, "SearchFood", this);
+    }
+
+    @Override
+    public void onBackButtonPressed() {
+        Log.i("FindFood", "onBackButtonPressed: Pressed!");
+        FindFoodFragment fragment = new FindFoodFragment();
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        Bundle bundle = new Bundle();
+        bundle.putString("comeFrom", "random");
+        fragment.setArguments(bundle);
+        transaction.replace(R.id.nav_host_fragment, fragment, tagFindFood)
+                .commit();
     }
 }
